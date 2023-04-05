@@ -1,7 +1,15 @@
-#[derive(Debug, PartialEq)]
+use std::fmt::Display;
+
+#[derive(PartialEq, Debug)]
 pub struct Grid {
     // 4x4 grid
     cells: [[u64; 4]; 4],
+}
+
+impl Display for Grid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "hihi")
+    }
 }
 
 impl Grid {
@@ -11,17 +19,26 @@ impl Grid {
 
     fn make_move(&mut self, mov: Move) {
         let rotation = mov.get_number();
+        self.handle_move(rotation)
     }
 
     fn handle_move(&mut self, rotation: usize) {
+        self.rotate_times(rotation);
+        self.mov();
+        self.rotate_times(4-rotation)
+    }
 
+    fn rotate_times(&mut self, n: usize) {
+        for i in 0..n {
+            self.rotate()
+        }
     }
 
     fn mov(&mut self) {
         // Implementation of Going right.
         self.mov_all_cells_to_the_side();
 
-        for i in 0..3 {
+        for i in 0..4 {
             let old_row = self.cells[i];
             let mut new_row = old_row;
 
@@ -90,9 +107,9 @@ enum Move {
 impl Move {
     fn get_number(&self) -> usize {
         match self {
-            Move::Left => todo!(),
             Move::Right => 0,
-            Move::Up => todo!(),
+            Move::Up => 1,
+            Move::Left => 2,
             Move::Down => 3,
         }
     }
@@ -229,6 +246,43 @@ mod tests {
     }
 
     #[test]
+    fn rotate_twice_works() {
+        let row1 = [2, 2, 2, 2];
+        let row2 = [0, 0, 0, 0];
+        let row3 = [2, 0, 4, 0];
+        let row4 = [0, 0, 0, 0];
+        let mut grid = Grid::new([row1, row2, row3, row4]);
+
+        let row1 = [0, 0, 0, 0];
+        let row2 = [0, 4, 0, 2];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [2, 2, 2, 2];
+        let result_grid = Grid::new([row1, row2, row3, row4]);
+
+        grid.rotate_times(2);
+        assert_eq!(grid, result_grid)
+    }
+
+    #[test]
+    fn lol() {
+        let row1 = [2, 2, 2, 2];
+        let row2 = [0, 0, 0, 0];
+        let row3 = [2, 0, 4, 0];
+        let row4 = [0, 0, 0, 0];
+        let mut grid = Grid::new([row1, row2, row3, row4]);
+
+        let row1 = [2, 2, 2, 2];
+        let row2 = [0, 0, 0, 0];
+        let row3 = [2, 0, 4, 0];
+        let row4 = [0, 0, 0, 0];
+        let result_grid = Grid::new([row1, row2, row3, row4]);
+
+        grid.rotate_times(2);
+        grid.rotate_times(2);
+        assert_eq!(grid, result_grid)
+    }
+
+    #[test]
     fn sanity_check2() {
         let row1 = [2, 2, 4, 4];
         let row2 = [0, 2, 0, 2];
@@ -282,6 +336,25 @@ mod tests {
         assert_eq!(grid, result_grid)
     }
 
+    #[test]
+    fn something() {
+        let row1 = [0, 0, 2, 0];
+        let row2 = [0, 2, 0, 2];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [4, 4, 2, 2];
+        let mut grid = Grid::new([row1, row2, row3, row4]);
+
+        let row1 = [0, 0, 0, 2];
+        let row2 = [0, 0, 0, 4];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [0, 0, 8, 4];
+        let result_grid = Grid::new([row1, row2, row3, row4]);
+
+        grid.mov();
+        assert_eq!(grid, result_grid)
+    }
+
+    #[test]
     fn move_left_works() {
         let row1 = [2, 2, 4, 4];
         let row2 = [0, 0, 0, 0];
@@ -295,7 +368,43 @@ mod tests {
         let row4 = [2, 0, 0, 0];
         let result_grid = Grid::new([row1, row2, row3, row4]);
 
-        grid.mov();
+        grid.make_move(Move::Left);
+        assert_eq!(grid, result_grid)
+    }
+
+    #[test]
+    fn move_up_works() {
+        let row1 = [2, 2, 4, 4];
+        let row2 = [0, 0, 0, 0];
+        let row3 = [2, 0, 2, 0];
+        let row4 = [0, 2, 0, 0];
+        let mut grid = Grid::new([row1, row2, row3, row4]);
+
+        let row1 = [4, 4, 4, 4];
+        let row2 = [0, 0, 2, 0];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [0, 0, 0, 0];
+        let result_grid = Grid::new([row1, row2, row3, row4]);
+
+        grid.make_move(Move::Up);
+        assert_eq!(grid, result_grid)
+    }
+
+    #[test]
+    fn move_down_works() {
+        let row1 = [2, 0, 0, 0];
+        let row2 = [0, 2, 0, 2];
+        let row3 = [2, 0, 2, 0];
+        let row4 = [0, 2, 2, 0];
+        let mut grid = Grid::new([row1, row2, row3, row4]);
+
+        let row1 = [0, 0, 0, 0];
+        let row2 = [0, 0, 0, 0];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [4, 4, 4, 2];
+        let result_grid = Grid::new([row1, row2, row3, row4]);
+
+        grid.make_move(Move::Down);
         assert_eq!(grid, result_grid)
     }
 
