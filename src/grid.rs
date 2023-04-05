@@ -1,4 +1,6 @@
-use std::fmt::Display;
+use std::error::Error;
+
+use rand::{Rng};
 
 #[derive(PartialEq, Debug)]
 pub struct Grid {
@@ -6,15 +8,44 @@ pub struct Grid {
     cells: [[u64; 4]; 4],
 }
 
-impl Display for Grid {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "hihi")
-    }
+enum GameStatus {
+    Done
+}
+
+enum GameError {
+
 }
 
 impl Grid {
     fn new(cells: [[u64; 4]; 4]) -> Self {
         Self { cells }
+    }
+
+    fn attempt(&mut self, mov: Move) -> Result<GameStatus, GameError> {
+
+        self.make_move(mov);
+        self.insert_random_cell();
+        Ok(GameStatus::Done)
+    }
+
+    fn insert_random_cell(&mut self) {
+        if self.is_board_full() {
+            return;
+        }
+        let random_cell: u64 = if rand::random() {2} else {4};
+        let mut rng = rand::thread_rng();
+        loop {
+            let x = rng.gen_range(0..4usize);
+            let y = rng.gen_range(0..4usize);
+            if self.cells[x][y] == 0 {
+                self.cells[x][y] = random_cell;
+                break;
+            }
+        }
+    }
+
+    fn is_board_full(&self) -> bool {
+        self.cells.iter().all(|row| row.iter().all(|val| *val != 0))
     }
 
     fn make_move(&mut self, mov: Move) {
@@ -442,5 +473,55 @@ mod tests {
 
         grid.mov_all_cells_to_the_side();
         assert_eq!(grid, result_grid)
+    }
+
+    #[test]
+    fn random_cell_is_inserted_after_attempt() {
+        let row1 = [0, 0, 2, 0];
+        let row2 = [0, 2, 0, 2];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [4, 4, 2, 2];
+        let mut grid = Grid::new([row1, row2, row3, row4]);
+
+        let row1 = [0, 0, 0, 2];
+        let row2 = [0, 0, 0, 4];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [0, 0, 8, 4];
+        let result_grid = Grid::new([row1, row2, row3, row4]);
+
+        grid.attempt(Move::Right);
+        assert_ne!(grid, result_grid);
+    }
+
+    #[test]
+    fn board_is_full_works() {
+        let row1 = [2, 2, 4, 2];
+        let row2 = [2, 2, 2, 2];
+        let row3 = [4, 2, 2, 2];
+        let row4 = [2, 2, 2, 2];
+        let mut grid = Grid::new([row1, row2, row3, row4]);
+
+        assert_eq!(grid.is_board_full(), true);
+
+        let row1 = [2, 2, 4, 2];
+        let row2 = [2, 2, 0, 2];
+        let row3 = [4, 2, 2, 2];
+        let row4 = [2, 2, 2, 2];
+        let mut grid = Grid::new([row1, row2, row3, row4]);
+
+        assert_eq!(grid.is_board_full(), false)
+    }
+
+    #[test]
+    fn insert_random_cell_works() {
+        let row1 = [2, 2, 4, 2];
+        let row2 = [2, 0, 2, 2];
+        let row3 = [4, 2, 2, 2];
+        let row4 = [2, 2, 2, 2];
+        let mut grid = Grid::new([row1, row2, row3, row4]);
+        grid.insert_random_cell();
+
+        let cell = grid.cells[1][1];
+        assert!(cell == 2 || cell == 4)
     }
 }
