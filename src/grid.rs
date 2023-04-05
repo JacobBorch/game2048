@@ -60,7 +60,7 @@ impl Grid {
     }
 
     fn rotate_times(&mut self, n: usize) {
-        for i in 0..n {
+        for _i in 0..n {
             self.rotate()
         }
     }
@@ -81,6 +81,7 @@ impl Grid {
                 continue;
             }
 
+            // Normal case
             for j in 0..3 {
                 if old_row[j] == old_row[j+1] {
                     new_row[j] = 0;
@@ -523,5 +524,24 @@ mod tests {
 
         let cell = grid.cells[1][1];
         assert!(cell == 2 || cell == 4)
+    }
+
+    #[test]
+    fn nothing_moves_when_nothing_should_move() {
+        let row1 = [2, 4, 8, 16];
+        let row2 = [2, 4, 8, 16];
+        let row3 = [2, 4, 8, 16];
+        let row4 = [2, 4, 8, 16];
+        let mut grid = Grid::new([row1, row2, row3, row4]);
+
+        let row1 = [2, 4, 8, 16];
+        let row2 = [2, 4, 8, 16];
+        let row3 = [2, 4, 8, 16];
+        let row4 = [2, 4, 8, 16];
+        let result_grid = Grid::new([row1, row2, row3, row4]);
+
+        grid.mov();
+
+        assert_eq!(grid, result_grid)
     }
 }
