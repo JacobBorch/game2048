@@ -73,14 +73,6 @@ impl Grid {
             let old_row = self.cells[i];
             let mut new_row = old_row;
 
-            //SPECIAL CASE: [x, x, x, x] => [0, 0, 2x, 2x]
-            let val = old_row[0];
-            if old_row.iter().all(|x| *x == val) {
-                let new_val = 2 * val;
-                self.cells[i] = [0, 0, new_val, new_val];
-                continue;
-            }
-
             // Normal case
             for j in (1..=3).rev() {
                 if new_row[j] == old_row[j-1] {
