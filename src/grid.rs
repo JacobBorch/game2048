@@ -82,10 +82,10 @@ impl Grid {
             }
 
             // Normal case
-            for j in 0..3 {
-                if old_row[j] == old_row[j+1] {
-                    new_row[j] = 0;
-                    new_row[j+1] *= 2;
+            for j in (1..=3).rev() {
+                if new_row[j] == old_row[j-1] {
+                    new_row[j] *= 2;
+                    new_row[j-1] = 0;
                 }
             }
             self.cells[i] = new_row;
@@ -543,5 +543,23 @@ mod tests {
         grid.mov();
 
         assert_eq!(grid, result_grid)
+    }
+
+    #[test]
+    fn bad_feeling_bout_this() {
+        let row1 = [2, 2, 2, 4];
+        let row2 = [2, 4, 4, 4];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [0, 0, 0, 0];
+        let mut grid = Grid::new([row1, row2, row3, row4]);
+
+        let row1 = [0, 2, 4, 4];
+        let row2 = [0, 2, 4, 8];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [0, 0, 0, 0];
+        let result_grid = Grid::new([row1, row2, row3, row4]);
+
+        grid.mov();
+        assert_eq!(grid, result_grid);
     }
 }
