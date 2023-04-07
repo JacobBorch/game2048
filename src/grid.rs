@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use rand::seq::SliceRandom;
 
 const moves: [Move; 4] = [Move::Left, Move::Right, Move::Up, Move::Down];
@@ -8,21 +10,20 @@ pub struct Grid {
     cells: [[u64; 4]; 4],
 }
 
-enum GameStatus {
-    Ok, InvalidMove, Lost
+#[derive(Debug, PartialEq)]
+pub enum GameStatus {
+    Ok,
+    InvalidMove,
+    Lost,
 }
-
 
 impl Grid {
     fn new(cells: [[u64; 4]; 4]) -> Self {
         Self { cells }
     }
 
-    fn new_random() -> Self {
-        let mut cells = [[0, 0, 0, 0],
-                         [0, 0, 0, 0],
-                         [0, 0, 0, 0],
-                         [0, 0, 0, 0]];
+    pub fn new_random() -> Self {
+        let mut cells = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
 
         let empty_cells = Self::get_empty_cells(cells);
         let mut rng = rand::thread_rng();
@@ -31,15 +32,12 @@ impl Grid {
         cells[*x1][*y1] = 2;
         cells[*x2][*y2] = 2;
 
-        Self {
-            cells
-        }
+        Self { cells }
     }
 
-    fn attempt(&mut self, mov: Move) -> GameStatus {
-
+    pub fn attempt(&mut self, mov: Move) -> GameStatus {
         if !self.move_is_valid(mov) {
-            return GameStatus::InvalidMove
+            return GameStatus::InvalidMove;
         }
 
         let new_cells = Self::make_move(self.cells, mov);
@@ -56,7 +54,7 @@ impl Grid {
         if self.is_board_full() {
             return;
         }
-        let val: u64 = if rand::random() {2} else {4};
+        let val: u64 = if rand::random() { 2 } else { 4 };
         let mut rng = rand::thread_rng();
         let empty_cells = Self::get_empty_cells(self.cells);
         // We know it can't be empty because we checked earlier so unwrapping is safe
@@ -98,7 +96,7 @@ impl Grid {
     fn handle_move(cells: [[u64; 4]; 4], rotation: usize) -> [[u64; 4]; 4] {
         let rotated = Self::rotate_times(cells, rotation);
         let moved = Self::mov(rotated);
-        let rotated_back = Self::rotate_times(moved, 4-rotation);
+        let rotated_back = Self::rotate_times(moved, 4 - rotation);
         rotated_back
     }
 
@@ -119,9 +117,9 @@ impl Grid {
             let mut new_row = old_row;
 
             for j in (1..=3).rev() {
-                if new_row[j] == old_row[j-1] {
+                if new_row[j] == old_row[j - 1] {
                     new_row[j] *= 2;
-                    new_row[j-1] = 0;
+                    new_row[j - 1] = 0;
                 }
             }
             cells[i] = new_row;
@@ -164,8 +162,26 @@ impl Grid {
     }
 }
 
+impl Display for Grid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for row in self.cells {
+            for val in row {
+                print!("{} ", val)
+            }
+            println!()
+        }
+        Ok(())
+    }
+}
+
+impl Default for Grid {
+    fn default() -> Self {
+        Self::new_random()
+    }
+}
+
 #[derive(Clone, Copy)]
-enum Move {
+pub enum Move {
     Left,
     Right,
     Up,
@@ -180,6 +196,76 @@ impl Move {
             Move::Left => 2,
             Move::Down => 3,
         }
+    }
+
+    pub fn str_to_move(input: &str) -> Move {
+        match input {
+            "l" => Self::Left,
+            "r" => Self::Right,
+            "u" => Self::Up,
+            "d" => Self::Down,
+            _ => todo!()
+        }
+    }
+}
+
+use yew::prelude::*;
+
+pub struct Model {
+    grid: Grid,
+}
+
+impl Model {
+
+    fn view_model(&self) -> Html {
+        html! {
+            <div class="grid">
+            <section class="section">
+                <div class="container">
+                    <div class="vcenter">
+                        <div class="board">
+                            <div class="square-grid">
+                                { for self.grid.cells.iter().map(|row| self.view_row(row)) }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        }
+    }
+    
+    fn view_row(&self, row: &[u64; 4]) -> Html {
+        html! {
+            <div class="square-row">
+                { for row.iter().map(|cell| self.view_cell(*cell)) }
+            </div>
+        }
+    }
+    
+    fn view_cell(&self, cell: u64) -> Html {
+        html! {
+            <div class="square">
+                <span class="square-number">{ cell }</span>
+            </div>
+        }
+    }
+    
+}
+
+impl Component for Model {
+    type Message = ();
+
+    type Properties = ();
+
+    fn create(_ctx: &Context<Self>) -> Self {
+        Model {
+            grid: Grid::default(),
+        }
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        self.view_model()
     }
 }
 
@@ -196,7 +282,7 @@ mod tests {
         let grid = [row1, row2, row3, row4];
         let empty_cells = Grid::get_empty_cells(grid);
 
-        assert_eq!(empty_cells, vec![(1,1), (2, 3)])
+        assert_eq!(empty_cells, vec![(1, 1), (2, 3)])
     }
 
     #[test]
@@ -484,7 +570,7 @@ mod tests {
         let row4 = [4, 4, 4, 2];
         let result_grid = [row1, row2, row3, row4];
 
-        let grid =Grid::make_move(grid, Move::Down);
+        let grid = Grid::make_move(grid, Move::Down);
         assert_eq!(grid, result_grid)
     }
 
