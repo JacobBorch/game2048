@@ -2,6 +2,8 @@ use std::error::Error;
 
 use rand::{Rng, seq::SliceRandom};
 
+const moves: [Move; 4] = [Move::Left, Move::Right, Move::Up, Move::Down];
+
 #[derive(PartialEq, Debug)]
 pub struct Grid {
     // 4x4 grid
@@ -61,15 +63,28 @@ impl Grid {
     }
 
     fn has_player_lost(&self) -> bool {
-        self.is_board_full()
+        if !self.is_board_full() {
+            return false;
+        }
+        let current = self.cells;
+        // Check if making any move will change current state:
+        for mov in moves.iter() {
+            let test = Self::make_move(current, *mov);
+            if test != current {
+                return false
+            }
+        }
+
+
+        true
     }
 
-    fn make_move(mut cells: [[u64; 4]; 4], mov: Move) -> [[u64; 4]; 4] {
+    fn make_move(cells: [[u64; 4]; 4], mov: Move) -> [[u64; 4]; 4] {
         let rotation = mov.get_number();
         Self::handle_move(cells, rotation)
     }
 
-    fn handle_move(mut cells: [[u64; 4]; 4], rotation: usize) -> [[u64; 4]; 4] {
+    fn handle_move(cells: [[u64; 4]; 4], rotation: usize) -> [[u64; 4]; 4] {
         let rotated = Self::rotate_times(cells, rotation);
         let moved = Self::mov(rotated);
         let rotated_back = Self::rotate_times(moved, 4-rotation);
@@ -84,7 +99,7 @@ impl Grid {
         rotated_cells
     }
 
-    fn mov(mut cells: [[u64; 4]; 4]) -> [[u64; 4]; 4] {
+    fn mov(cells: [[u64; 4]; 4]) -> [[u64; 4]; 4] {
         // Implementation of Going right.
         let mut cells = Self::mov_all_cells_to_the_side(cells);
 
@@ -138,6 +153,7 @@ impl Grid {
     }
 }
 
+#[derive(Clone, Copy)]
 enum Move {
     Left,
     Right,
@@ -582,5 +598,38 @@ mod tests {
 
         let grid = Grid::mov(grid);
         assert_eq!(grid, result_grid);
+    }
+
+    #[test]
+    fn has_player_lost_works_when_player_board_isnt_full() {
+        let row1 = [2, 2, 2, 4];
+        let row2 = [2, 4, 4, 4];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [0, 0, 0, 0];
+        let grid = Grid::new([row1, row2, row3, row4]);
+
+        assert!(!grid.has_player_lost())
+    }
+
+    #[test]
+    fn has_player_lost_works_when_player_board_is_full_but_a_move_is_possible() {
+        let row1 = [2, 4, 2, 4];
+        let row2 = [4, 2, 4, 2];
+        let row3 = [2, 4, 2, 4];
+        let row4 = [4, 2, 4, 4];
+        let grid = Grid::new([row1, row2, row3, row4]);
+
+        assert!(!grid.has_player_lost())
+    }
+
+    #[test]
+    fn player_has_lost_when_player_has_lost() {
+        let row1 = [2, 4, 2, 4];
+        let row2 = [4, 2, 4, 2];
+        let row3 = [2, 4, 2, 4];
+        let row4 = [4, 2, 4, 2];
+        let grid = Grid::new([row1, row2, row3, row4]);
+
+        assert!(grid.has_player_lost())
     }
 }
