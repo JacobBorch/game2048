@@ -1,6 +1,4 @@
-use std::error::Error;
-
-use rand::{Rng, seq::SliceRandom};
+use rand::seq::SliceRandom;
 
 const moves: [Move; 4] = [Move::Left, Move::Right, Move::Up, Move::Down];
 
@@ -11,23 +9,29 @@ pub struct Grid {
 }
 
 enum GameStatus {
-    Done
+    Ok, InvalidMove, Lost
 }
 
-enum GameError {
-    
-}
 
 impl Grid {
     fn new(cells: [[u64; 4]; 4]) -> Self {
         Self { cells }
     }
 
-    fn attempt(&mut self, mov: Move) -> Result<GameStatus, GameError> {
+    fn attempt(&mut self, mov: Move) -> GameStatus {
+
+        if !self.move_is_valid(mov) {
+            return GameStatus::InvalidMove
+        }
+
         let new_cells = Self::make_move(self.cells, mov);
         self.cells = new_cells;
+
         self.insert_random_cell();
-        Ok(GameStatus::Done)
+        if self.has_player_lost() {
+            return GameStatus::Lost;
+        }
+        GameStatus::Ok
     }
 
     fn insert_random_cell(&mut self) {
@@ -60,8 +64,12 @@ impl Grid {
         self.cells.iter().all(|row| row.iter().all(|val| *val != 0))
     }
 
+    fn move_is_valid(&self, mov: Move) -> bool {
+        self.cells != Self::make_move(self.cells, mov)
+    }
+
     fn has_player_lost(&self) -> bool {
-        !moves.iter().any(|mov| self.cells != Self::make_move(self.cells, *mov))
+        !moves.iter().any(|mov| self.move_is_valid(*mov))
     }
 
     fn make_move(cells: [[u64; 4]; 4], mov: Move) -> [[u64; 4]; 4] {
@@ -616,5 +624,27 @@ mod tests {
         let grid = Grid::new([row1, row2, row3, row4]);
 
         assert!(grid.has_player_lost())
+    }
+
+    #[test]
+    fn move_is_valid_works_when_invalid() {
+        let row1 = [2, 4, 0, 0];
+        let row2 = [2, 0, 0, 0];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [4, 2, 0, 0];
+        let grid = Grid::new([row1, row2, row3, row4]);
+
+        assert!(!grid.move_is_valid(Move::Left))
+    }
+
+    #[test]
+    fn move_is_valid_works_when_valid() {
+        let row1 = [2, 4, 0, 0];
+        let row2 = [2, 0, 0, 0];
+        let row3 = [0, 0, 0, 0];
+        let row4 = [4, 2, 0, 0];
+        let grid = Grid::new([row1, row2, row3, row4]);
+
+        assert!(grid.move_is_valid(Move::Right))
     }
 }
