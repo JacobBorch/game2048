@@ -210,30 +210,20 @@ impl Move {
 }
 
 use yew::prelude::*;
+use yew::events::KeyboardEvent;
+
+
+pub enum Msg {
+    KeyDown(KeyboardEvent),
+    Fake
+}
 
 pub struct Model {
     grid: Grid,
+    score: u64
 }
 
 impl Model {
-
-    fn view_model(&self) -> Html {
-        html! {
-            <div class="grid">
-            <section class="section">
-                <div class="container">
-                    <div class="vcenter">
-                        <div class="board">
-                            <div class="square-grid">
-                                { for self.grid.cells.iter().map(|row| self.view_row(row)) }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-        }
-    }
     
     fn view_row(&self, row: &[u64; 4]) -> Html {
         html! {
@@ -254,18 +244,64 @@ impl Model {
 }
 
 impl Component for Model {
-    type Message = ();
+    type Message = Msg;
 
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
         Model {
             grid: Grid::default(),
+            score: 0
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        self.view_model()
+        html! {
+            <>
+            <div class="score" onclick={ctx.link().callback(|_| Msg::Fake)}>
+                {self.score}
+            </div>
+            <div class="grid" onkeydown={ctx.link().callback(|event| Msg::KeyDown(event))}>
+            <section class="section">
+                <div class="container">
+                    <div class="vcenter">
+                        <div class="board">
+                            <div class="square-grid">
+                                { for self.grid.cells.iter().map(|row| self.view_row(row)) }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        </>
+        }
+    }
+
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::KeyDown(event) => {
+                let key_code = event.key_code();
+                let arrow = match key_code {
+                    // Handle arrow key presses
+                    37 => Some(Move::Left),
+                    38 => Some(Move::Up),
+                    39 => Some(Move::Right),
+                    40 => Some(Move::Down),
+                    _ => None,
+                };
+                if let Some(a) = arrow {
+                    self.grid.attempt(a);
+                }
+
+                true
+            }
+            Msg::Fake => {
+                self.grid.attempt(Move::Left);
+                self.score += 1;
+                true
+            }
+        }
     }
 }
 

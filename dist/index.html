@@ -43,11 +43,14 @@
         .square-number {
             font-size: 3.0em;
         }
+        .score {
+            font-size: 10.0em;
+        }
 
     </style>
 
-<link rel="preload" href="/game2048-d23fa0c5d5a1af69_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/game2048-d23fa0c5d5a1af69.js"></head>
+<link rel="preload" href="/game2048-18ee300f27144b12_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/game2048-18ee300f27144b12.js"></head>
 <body>
     <script type="module">
         import init from './wasm.js';
@@ -55,7 +58,7 @@
     </script>
 
 
-<script type="module">import init from '/game2048-d23fa0c5d5a1af69.js';init('/game2048-d23fa0c5d5a1af69_bg.wasm');</script><script>(function () {
+<script type="module">import init from '/game2048-18ee300f27144b12.js';init('/game2048-18ee300f27144b12_bg.wasm');</script><script>(function () {
     var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     var url = protocol + '//' + window.location.host + '/_trunk/ws';
     var poll_interval = 5000;
