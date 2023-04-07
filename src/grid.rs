@@ -23,7 +23,9 @@ impl Grid {
 
     fn attempt(&mut self, mov: Move) -> Result<GameStatus, GameError> {
 
-        self.make_move(mov);
+
+        let new_cells = Self::make_move(self.cells, mov);
+        self.cells = new_cells;
         self.insert_random_cell();
         Ok(GameStatus::Done)
     }
@@ -62,17 +64,16 @@ impl Grid {
         self.is_board_full()
     }
 
-    fn make_move(&mut self, mov: Move) {
+    fn make_move(mut cells: [[u64; 4]; 4], mov: Move) -> [[u64; 4]; 4] {
         let rotation = mov.get_number();
-        self.handle_move(rotation)
+        Self::handle_move(cells, rotation)
     }
 
-    fn handle_move(&mut self, rotation: usize) {
-        let cells = self.cells;
+    fn handle_move(mut cells: [[u64; 4]; 4], rotation: usize) -> [[u64; 4]; 4] {
         let rotated = Self::rotate_times(cells, rotation);
         let moved = Self::mov(rotated);
         let rotated_back = Self::rotate_times(moved, 4-rotation);
-        self.cells = rotated_back
+        rotated_back
     }
 
     fn rotate_times(cells: [[u64; 4]; 4], n: usize) -> [[u64; 4]; 4] {
@@ -99,8 +100,7 @@ impl Grid {
             }
             cells[i] = new_row;
         }
-        let cells = Self::mov_all_cells_to_the_side(cells);
-        cells
+        Self::mov_all_cells_to_the_side(cells)
     }
 
     fn mov_all_cells_to_the_side(mut cells: [[u64; 4]; 4]) -> [[u64; 4]; 4] {
@@ -178,7 +178,7 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [0, 0, 0, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 0, 2];
         let row2 = [0, 0, 0, 0];
@@ -196,7 +196,7 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [2, 0, 0, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 0, 2];
         let row2 = [0, 0, 0, 0];
@@ -214,7 +214,7 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [2, 0, 0, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 0, 4];
         let row2 = [0, 0, 0, 0];
@@ -232,7 +232,7 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [2, 0, 0, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 4, 4];
         let row2 = [0, 0, 0, 0];
@@ -250,7 +250,7 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [2, 0, 0, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 4, 8];
         let row2 = [0, 0, 0, 0];
@@ -268,7 +268,7 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [2, 0, 0, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 4, 4];
         let row2 = [0, 0, 0, 0];
@@ -286,7 +286,7 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [2, 0, 4, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 2, 0, 2];
         let row2 = [0, 0, 0, 2];
@@ -304,7 +304,7 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [2, 0, 4, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 0, 0];
         let row2 = [0, 4, 0, 2];
@@ -322,7 +322,7 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [2, 0, 4, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [2, 2, 2, 2];
         let row2 = [0, 0, 0, 0];
@@ -341,7 +341,7 @@ mod tests {
         let row2 = [0, 2, 0, 2];
         let row3 = [2, 0, 2, 0];
         let row4 = [0, 2, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 4, 8];
         let row2 = [0, 0, 0, 4];
@@ -359,7 +359,7 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [0, 0, 0, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 4, 4];
         let row2 = [0, 0, 0, 0];
@@ -377,7 +377,7 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [0, 0, 0, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 4, 4];
         let row2 = [0, 0, 0, 0];
@@ -395,7 +395,7 @@ mod tests {
         let row2 = [0, 2, 0, 2];
         let row3 = [0, 0, 0, 0];
         let row4 = [4, 4, 2, 2];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 0, 2];
         let row2 = [0, 0, 0, 4];
@@ -413,15 +413,15 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [2, 0, 2, 0];
         let row4 = [0, 2, 0, 0];
-        let mut grid = Grid::new([row1, row2, row3, row4]);
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [4, 8, 0, 0];
         let row2 = [0, 0, 0, 0];
         let row3 = [4, 0, 0, 0];
         let row4 = [2, 0, 0, 0];
-        let result_grid = Grid::new([row1, row2, row3, row4]);
+        let result_grid = [row1, row2, row3, row4];
 
-        grid.make_move(Move::Left);
+        let grid = Grid::make_move(grid, Move::Left);
         assert_eq!(grid, result_grid)
     }
 
@@ -431,15 +431,15 @@ mod tests {
         let row2 = [0, 0, 0, 0];
         let row3 = [2, 0, 2, 0];
         let row4 = [0, 2, 0, 0];
-        let mut grid = Grid::new([row1, row2, row3, row4]);
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [4, 4, 4, 4];
         let row2 = [0, 0, 2, 0];
         let row3 = [0, 0, 0, 0];
         let row4 = [0, 0, 0, 0];
-        let result_grid = Grid::new([row1, row2, row3, row4]);
+        let result_grid = [row1, row2, row3, row4];
 
-        grid.make_move(Move::Up);
+        let grid = Grid::make_move(grid, Move::Up);
         assert_eq!(grid, result_grid)
     }
 
@@ -449,15 +449,15 @@ mod tests {
         let row2 = [0, 2, 0, 2];
         let row3 = [2, 0, 2, 0];
         let row4 = [0, 2, 2, 0];
-        let mut grid = Grid::new([row1, row2, row3, row4]);
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 0, 0];
         let row2 = [0, 0, 0, 0];
         let row3 = [0, 0, 0, 0];
         let row4 = [4, 4, 4, 2];
-        let result_grid = Grid::new([row1, row2, row3, row4]);
+        let result_grid = [row1, row2, row3, row4];
 
-        grid.make_move(Move::Down);
+        let grid =Grid::make_move(grid, Move::Down);
         assert_eq!(grid, result_grid)
     }
 
@@ -467,7 +467,7 @@ mod tests {
         let row2 = [0, 2, 0, 2];
         let row3 = [2, 0, 2, 0];
         let row4 = [0, 2, 2, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 0, 0, 2];
         let row2 = [0, 0, 2, 2];
@@ -485,7 +485,7 @@ mod tests {
         let row2 = [2, 2, 0, 2];
         let row3 = [4, 0, 2, 2];
         let row4 = [0, 2, 2, 2];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 2, 2, 4];
         let row2 = [0, 2, 2, 2];
@@ -521,7 +521,7 @@ mod tests {
         let row2 = [2, 2, 2, 2];
         let row3 = [4, 2, 2, 2];
         let row4 = [2, 2, 2, 2];
-        let mut grid = Grid::new([row1, row2, row3, row4]);
+        let grid = Grid::new([row1, row2, row3, row4]);
 
         assert_eq!(grid.is_board_full(), true);
 
@@ -529,7 +529,7 @@ mod tests {
         let row2 = [2, 2, 0, 2];
         let row3 = [4, 2, 2, 2];
         let row4 = [2, 2, 2, 2];
-        let mut grid = Grid::new([row1, row2, row3, row4]);
+        let grid = Grid::new([row1, row2, row3, row4]);
 
         assert_eq!(grid.is_board_full(), false)
     }
@@ -553,7 +553,7 @@ mod tests {
         let row2 = [2, 4, 8, 16];
         let row3 = [2, 4, 8, 16];
         let row4 = [2, 4, 8, 16];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [2, 4, 8, 16];
         let row2 = [2, 4, 8, 16];
@@ -572,7 +572,7 @@ mod tests {
         let row2 = [2, 4, 4, 4];
         let row3 = [0, 0, 0, 0];
         let row4 = [0, 0, 0, 0];
-        let mut grid = [row1, row2, row3, row4];
+        let grid = [row1, row2, row3, row4];
 
         let row1 = [0, 2, 4, 4];
         let row2 = [0, 2, 4, 8];
