@@ -24,8 +24,6 @@ impl Grid {
     }
 
     fn attempt(&mut self, mov: Move) -> Result<GameStatus, GameError> {
-
-
         let new_cells = Self::make_move(self.cells, mov);
         self.cells = new_cells;
         self.insert_random_cell();
@@ -63,20 +61,7 @@ impl Grid {
     }
 
     fn has_player_lost(&self) -> bool {
-        if !self.is_board_full() {
-            return false;
-        }
-        let current = self.cells;
-        // Check if making any move will change current state:
-        for mov in moves.iter() {
-            let test = Self::make_move(current, *mov);
-            if test != current {
-                return false
-            }
-        }
-
-
-        true
+        !moves.iter().any(|mov| self.cells != Self::make_move(self.cells, *mov))
     }
 
     fn make_move(cells: [[u64; 4]; 4], mov: Move) -> [[u64; 4]; 4] {
