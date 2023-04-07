@@ -18,6 +18,24 @@ impl Grid {
         Self { cells }
     }
 
+    fn new_random() -> Self {
+        let mut cells = [[0, 0, 0, 0],
+                         [0, 0, 0, 0],
+                         [0, 0, 0, 0],
+                         [0, 0, 0, 0]];
+
+        let empty_cells = Self::get_empty_cells(cells);
+        let mut rng = rand::thread_rng();
+        let (x1, y1) = empty_cells.choose(&mut rng).unwrap();
+        let (x2, y2) = empty_cells.choose(&mut rng).unwrap();
+        cells[*x1][*y1] = 2;
+        cells[*x2][*y2] = 2;
+
+        Self {
+            cells
+        }
+    }
+
     fn attempt(&mut self, mov: Move) -> GameStatus {
 
         if !self.move_is_valid(mov) {
@@ -40,18 +58,18 @@ impl Grid {
         }
         let val: u64 = if rand::random() {2} else {4};
         let mut rng = rand::thread_rng();
-        let empty_cells = self.get_empty_cells();
+        let empty_cells = Self::get_empty_cells(self.cells);
         // We know it can't be empty because we checked earlier so unwrapping is safe
         let (x, y) = empty_cells.choose(&mut rng).unwrap();
         self.cells[*x][*y] = val;
     }
 
-    fn get_empty_cells(&self) -> Vec<(usize, usize)> {
+    fn get_empty_cells(cells: [[u64; 4]; 4]) -> Vec<(usize, usize)> {
         let mut empty_cells: Vec<(usize, usize)> = Vec::new();
 
         for i in 0..4 {
             for j in 0..4 {
-                if self.cells[i][j] == 0 {
+                if cells[i][j] == 0 {
                     empty_cells.push((i, j))
                 }
             }
@@ -175,8 +193,8 @@ mod tests {
         let row2 = [2, 0, 2, 2];
         let row3 = [4, 2, 2, 0];
         let row4 = [2, 2, 2, 2];
-        let grid = Grid::new([row1, row2, row3, row4]);
-        let empty_cells = grid.get_empty_cells();
+        let grid = [row1, row2, row3, row4];
+        let empty_cells = Grid::get_empty_cells(grid);
 
         assert_eq!(empty_cells, vec![(1,1), (2, 3)])
     }
