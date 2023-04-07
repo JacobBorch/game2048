@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use rand::{Rng};
+use rand::{Rng, seq::SliceRandom};
 
 #[derive(PartialEq, Debug)]
 pub struct Grid {
@@ -32,23 +32,33 @@ impl Grid {
         if self.is_board_full() {
             return;
         }
-        let random_cell: u64 = if rand::random() {2} else {4};
+        let val: u64 = if rand::random() {2} else {4};
         let mut rng = rand::thread_rng();
-        loop {
-            let x = rng.gen_range(0..4usize);
-            let y = rng.gen_range(0..4usize);
-            if self.cells[x][y] == 0 {
-                self.cells[x][y] = random_cell;
-                break;
+        let empty_cells = self.get_empty_cells();
+        // We know it can't be empty because we checked earlier so unwrapping is safe
+        let (x, y) = empty_cells.choose(&mut rng).unwrap();
+        self.cells[*x][*y] = val;
+    }
+
+    fn get_empty_cells(&self) -> Vec<(usize, usize)> {
+        let mut empty_cells: Vec<(usize, usize)> = Vec::new();
+
+        for i in 0..4 {
+            for j in 0..4 {
+                if self.cells[i][j] == 0 {
+                    empty_cells.push((i, j))
+                }
             }
         }
+
+        empty_cells
     }
 
     fn is_board_full(&self) -> bool {
         self.cells.iter().all(|row| row.iter().all(|val| *val != 0))
     }
 
-    fn is_board_locked(&self) -> bool {
+    fn has_player_lost(&self) -> bool {
         self.is_board_full()
     }
 
@@ -149,6 +159,18 @@ impl Move {
 #[cfg(test)]
 mod tests {
     use super::{Grid, Move};
+
+    #[test]
+    fn get_empty_cells_work() {
+        let row1 = [2, 2, 4, 2];
+        let row2 = [2, 0, 2, 2];
+        let row3 = [4, 2, 2, 0];
+        let row4 = [2, 2, 2, 2];
+        let grid = Grid::new([row1, row2, row3, row4]);
+        let empty_cells = grid.get_empty_cells();
+
+        assert_eq!(empty_cells, vec![(1,1), (2, 3)])
+    }
 
     #[test]
     fn move_right_works() {
