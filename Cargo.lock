@@ -146,6 +146,7 @@ dependencies = [
  "log",
  "rand",
  "wasm-bindgen",
+ "web-sys",
  "yew",
 ]
 
