@@ -248,22 +248,28 @@ pub struct Model {
 }
 
 impl Model {
-    fn view_row(&self, row: &[u64; 4]) -> Html {
+    fn view_row(&self, (y, row): (usize, &[u64; 4])) -> Html {
         html! {
             <div class="square-row">
-                { for row.iter().map(|cell| self.view_cell(*cell)) }
+                { for row.iter().enumerate().map(|(x, cell)| self.view_cell(*cell, x, y)) }
             </div>
         }
     }
+    
 
-    fn view_cell(&self, cell: u64) -> Html {
+    fn view_cell(&self, cell: u64, x: usize, y: usize) -> Html {
         let background_color = format!("background-color:{};", get_color_for_cell(cell));
+        let position_top = format!("top:{}px;", y * 100); // Adjust this value based on your grid cell size
+        let position_left = format!("left:{}px;", x * (100 + 7)); // Adjust this value based on your grid cell size
+        let style = format!("{}{}{}", background_color, position_top, position_left);
         html! {
-            <div class="square" style={background_color}>
+            <div class="square" style={style}>
                 <span class="square-number">{ cell }</span>
             </div>
         }
     }
+    
+    
 }
 
 impl Component for Model {
@@ -306,7 +312,7 @@ impl Component for Model {
                     <div class="vcenter">
                         <div class="board">
                             <div class="square-grid">
-                                { for self.grid.cells.iter().map(|row| self.view_row(row)) }
+                                { for self.grid.cells.iter().enumerate().map(|(y, row)| self.view_row((y, row))) }
                             </div>
                         </div>
                     </div>
