@@ -1,10 +1,10 @@
 use std::fmt::Display;
-
 use rand::seq::SliceRandom;
-
-use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{HtmlDivElement};
+use web_sys::HtmlDivElement;
+use wasm_bindgen::prelude::Closure;
+use yew::events::KeyboardEvent;
+use yew::prelude::*;
 
 const MOVES: [Move; 4] = [Move::Left, Move::Right, Move::Up, Move::Down];
 
@@ -22,11 +22,7 @@ pub enum GameStatus {
 }
 
 impl Grid {
-    fn new(cells: [[u64; 4]; 4]) -> Self {
-        Self { cells }
-    }
-
-    pub fn new_random() -> Self {
+     pub fn new_random() -> Self {
         let mut cells = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
 
         let empty_cells = Self::get_empty_cells(cells);
@@ -203,10 +199,6 @@ impl Move {
     }
 }
 
-use wasm_bindgen::prelude::Closure;
-use yew::events::KeyboardEvent;
-use yew::prelude::*;
-
 pub enum Msg {
     KeyDown(KeyboardEvent)
 }
@@ -337,6 +329,12 @@ impl Component for Model {
 #[cfg(test)]
 mod tests {
     use super::{Grid, Move};
+
+    impl Grid {
+        fn new(cells: [[u64; 4]; 4]) -> Self {
+            Self { cells }
+        }
+    }
 
     #[test]
     fn get_empty_cells_work() {
