@@ -4,9 +4,9 @@ use rand::seq::SliceRandom;
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{HtmlDivElement, Window};
+use web_sys::{HtmlDivElement};
 
-const moves: [Move; 4] = [Move::Left, Move::Right, Move::Up, Move::Down];
+const MOVES: [Move; 4] = [Move::Left, Move::Right, Move::Up, Move::Down];
 
 #[derive(PartialEq, Debug)]
 pub struct Grid {
@@ -89,7 +89,7 @@ impl Grid {
     }
 
     fn has_player_lost(&self) -> bool {
-        !moves.iter().any(|mov| self.move_is_valid(*mov))
+        !MOVES.iter().any(|mov| self.move_is_valid(*mov))
     }
 
     fn make_move(cells: [[u64; 4]; 4], mov: Move) -> [[u64; 4]; 4] {
@@ -167,7 +167,7 @@ impl Grid {
 }
 
 impl Display for Grid {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in self.cells {
             for val in row {
                 print!("{} ", val)
@@ -201,16 +201,6 @@ impl Move {
             Move::Down => 3,
         }
     }
-
-    pub fn str_to_move(input: &str) -> Move {
-        match input {
-            "l" => Self::Left,
-            "r" => Self::Right,
-            "u" => Self::Up,
-            "d" => Self::Down,
-            _ => todo!(),
-        }
-    }
 }
 
 use wasm_bindgen::prelude::Closure;
@@ -218,8 +208,7 @@ use yew::events::KeyboardEvent;
 use yew::prelude::*;
 
 pub enum Msg {
-    KeyDown(KeyboardEvent),
-    Fake,
+    KeyDown(KeyboardEvent)
 }
 
 fn get_color_for_cell(value: u64) -> &'static str {
@@ -277,14 +266,13 @@ impl Component for Model {
 
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         let model = Model {
             grid: Grid::default(),
             score: 0,
             grid_node: NodeRef::default(),
         };
 
-        let link = ctx.link().clone();
         let grid_node = model.grid_node.clone();
         let closure = Closure::wrap(Box::new(move || {
             if let Some(grid) = grid_node.cast::<HtmlDivElement>() {
@@ -323,7 +311,7 @@ impl Component for Model {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::KeyDown(event) => {
                 let key_code = event.key_code();
@@ -341,11 +329,7 @@ impl Component for Model {
 
                 true
             }
-            Msg::Fake => {
-                self.grid.attempt(Move::Left);
-                self.score += 1;
-                true
-            }
+
         }
     }
 }
