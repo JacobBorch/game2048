@@ -200,7 +200,8 @@ impl Move {
 }
 
 pub enum Msg {
-    KeyDown(KeyboardEvent)
+    KeyDown(KeyboardEvent),
+    TouchStart(TouchEvent)
 }
 
 fn get_color_for_cell(value: u64) -> &'static str {
@@ -286,7 +287,9 @@ impl Component for Model {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <>
-            <div class="grid" tabindex="0" ref={self.grid_node.clone()} onkeydown={ctx.link().callback(|event| Msg::KeyDown(event))}>
+            <div class="grid" tabindex="0" ref={self.grid_node.clone()} 
+            onkeydown={ctx.link().callback(|event| Msg::KeyDown(event))}
+            >
             <section class="section">
                 <div class="container">
                     <div class="vcenter">
@@ -321,6 +324,10 @@ impl Component for Model {
 
                 true
             }
+            Msg::TouchStart(event) => {
+                self.grid.attempt(Move::Left);
+                true
+            },
 
         }
     }
