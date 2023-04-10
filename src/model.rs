@@ -1,9 +1,9 @@
+use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlDivElement;
-use wasm_bindgen::prelude::Closure;
+use web_sys::{TouchEvent, TouchList};
 use yew::events::KeyboardEvent;
 use yew::prelude::*;
-use web_sys::{TouchEvent, TouchList};
 
 use crate::grid::{Grid, Move};
 
@@ -29,7 +29,7 @@ fn get_color_for_text(value: u64) -> &'static str {
     match value {
         2 => "#6c6462",
         4 => "#6c6462",
-        _ => "#FFFFFF"
+        _ => "#FFFFFF",
     }
 }
 
@@ -37,14 +37,15 @@ pub enum Msg {
     KeyDown(KeyboardEvent),
     TouchStart(TouchEvent),
     TouchMove(TouchEvent),
-    TouchEnd(TouchEvent)
+    TouchEnd(TouchEvent),
+    NewGame,
 }
 
 pub struct Model {
     grid: Grid,
     grid_node: NodeRef,
     touch_start_x: Option<i32>,
-    touch_start_y: Option<i32>
+    touch_start_y: Option<i32>,
 }
 
 impl Model {
@@ -55,7 +56,6 @@ impl Model {
             </div>
         }
     }
-    
 
     fn view_cell(&self, cell: u64, x: usize, y: usize) -> Html {
         let background_color = format!("background-color:{};", get_color_for_cell(cell));
@@ -64,7 +64,7 @@ impl Model {
         let style = format!("{}{}{}", background_color, position_top, position_left);
         let cell_text = match cell {
             0 => "".to_string(),
-            _ => cell.to_string()
+            _ => cell.to_string(),
         };
         let text_color = get_color_for_text(cell);
         let text_style = format!("color:{};", text_color);
@@ -73,7 +73,11 @@ impl Model {
                 <span class="square-number" style={text_style}>{ cell_text }</span>
             </div>
         }
-    } 
+    }
+
+    fn make_move(&mut self, mov: Move) {
+        self.grid.attempt(mov);
+    }
 }
 
 impl Component for Model {
@@ -87,7 +91,6 @@ impl Component for Model {
             grid_node: NodeRef::default(),
             touch_start_x: None,
             touch_start_y: None,
-            
         };
 
         let grid_node = model.grid_node.clone();
@@ -109,13 +112,29 @@ impl Component for Model {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
+        let game_over_popup = if self.grid.has_player_lost() {
+            html! {
+                <div class="game-over-popup">
+                    <div class="game-over-content">
+                        <h2>{ "Game Over" }</h2>
+                        <button onclick={ctx.link().callback(|_| Msg::NewGame)}>{ "New Game" }</button>
+                    </div>
+                </div>
+            }
+        } else {
+            html! {}
+        };
+
         html! {
             <>
             <div class="scoreboard">
-                <h2>{ "Score" }</h2>
-                <p>{ self.grid.get_score() }</p>
+                <div class="score-container"> // Add this wrapper div
+                    <h2>{ "Score" }</h2>
+                    <p>{ self.grid.get_score() }</p>
+                </div>
+                <button onclick={ctx.link().callback(|_| Msg::NewGame)}>{ "New Game" }</button>
             </div>
-            <div class="grid disable-scroll" tabindex="0" ref={self.grid_node.clone()} 
+            <div class="grid disable-scroll" tabindex="0" ref={self.grid_node.clone()}
             onkeydown={ctx.link().callback(|event| Msg::KeyDown(event))}
             ontouchstart={ctx.link().callback(|event| Msg::TouchStart(event))}
             ontouchmove={ctx.link().callback(|event| Msg::TouchMove(event))}
@@ -133,6 +152,7 @@ impl Component for Model {
                 </div>
             </section>
         </div>
+        { game_over_popup }
         </>
         }
     }
@@ -149,7 +169,7 @@ impl Component for Model {
                     _ => None,
                 };
                 if let Some(a) = arrow {
-                    self.grid.attempt(a);
+                    self.make_move(a);
                 }
 
                 true
@@ -178,7 +198,7 @@ impl Component for Model {
                             let dx = touch.client_x() - touch_start_x;
                             let dy = touch.client_y() - touch_start_y;
                             let move_threshold = 30; // You can adjust this value as needed
-            
+
                             let arrow = if dx.abs() > dy.abs() {
                                 if dx > move_threshold {
                                     Some(Move::Right)
@@ -196,16 +216,20 @@ impl Component for Model {
                                     None
                                 }
                             };
-            
+
                             if let Some(a) = arrow {
-                                self.grid.attempt(a);
+                                self.make_move(a);
                             }
-            
+
                             self.touch_start_x = None;
                             self.touch_start_y = None;
                         }
                     }
                 }
+                true
+            }
+            Msg::NewGame => {
+                self.grid = Grid::default();
                 true
             }
         }

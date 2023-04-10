@@ -10,8 +10,6 @@ pub struct Grid {
     score: u64
 }
 
-type Score = u64;
-
 #[derive(Debug, PartialEq)]
 pub enum GameStatus {
     Ok,
@@ -89,7 +87,7 @@ impl Grid {
         self.cells != (Self::make_move(self.cells, mov)).0
     }
 
-    fn has_player_lost(&self) -> bool {
+    pub fn has_player_lost(&self) -> bool {
         !MOVES.iter().any(|mov| self.move_is_valid(*mov))
     }
 
