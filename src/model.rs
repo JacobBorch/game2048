@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use wasm_bindgen::JsCast;
 use web_sys::HtmlDivElement;
 use wasm_bindgen::prelude::Closure;
@@ -44,7 +42,6 @@ pub enum Msg {
 
 pub struct Model {
     grid: Grid,
-    score: u64,
     grid_node: NodeRef,
     touch_start_x: Option<i32>,
     touch_start_y: Option<i32>
@@ -87,7 +84,6 @@ impl Component for Model {
     fn create(_ctx: &Context<Self>) -> Self {
         let model = Model {
             grid: Grid::default(),
-            score: 0,
             grid_node: NodeRef::default(),
             touch_start_x: None,
             touch_start_y: None,
@@ -115,6 +111,10 @@ impl Component for Model {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <>
+            <div class="scoreboard">
+                <h2>{ "Score" }</h2>
+                <p>{ self.grid.get_score() }</p>
+            </div>
             <div class="grid disable-scroll" tabindex="0" ref={self.grid_node.clone()} 
             onkeydown={ctx.link().callback(|event| Msg::KeyDown(event))}
             ontouchstart={ctx.link().callback(|event| Msg::TouchStart(event))}
@@ -141,7 +141,6 @@ impl Component for Model {
         match msg {
             Msg::KeyDown(event) => {
                 let key_code = event.key_code();
-                self.score = key_code as u64;
                 let arrow = match key_code {
                     37 => Some(Move::Left),
                     38 => Some(Move::Up),
