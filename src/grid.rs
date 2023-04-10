@@ -1,4 +1,4 @@
-use rand::seq::SliceRandom;
+use rand::{seq::SliceRandom, distributions::Bernoulli, prelude::Distribution};
 
 const MOVES: [Move; 4] = [Move::Left, Move::Right, Move::Up, Move::Down];
 
@@ -16,17 +16,17 @@ pub enum GameStatus {
 }
 
 impl Grid {
-     pub fn new_random() -> Self {
-        let mut cells = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
 
-        let empty_cells = Self::get_empty_cells(cells);
-        let mut rng = rand::thread_rng();
-        let (x1, y1) = empty_cells.choose(&mut rng).unwrap();
-        let (x2, y2) = empty_cells.choose(&mut rng).unwrap();
-        cells[*x1][*y1] = 2;
-        cells[*x2][*y2] = 2;
-
+    fn new(cells: [[u64; 4]; 4]) -> Self {
         Self { cells }
+    }
+
+     pub fn new_random() -> Self {
+        let cells = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+        let mut grid = Self::new(cells);
+        grid.insert_random_cell();
+        grid.insert_random_cell();
+        grid
     }
 
     pub fn attempt(&mut self, mov: Move) -> GameStatus {
@@ -48,8 +48,10 @@ impl Grid {
         if self.is_board_full() {
             return;
         }
-        let val: u64 = if rand::random() { 2 } else { 4 };
         let mut rng = rand::thread_rng();
+        let bern = Bernoulli::new(0.9).unwrap();
+        let roll = bern.sample(&mut rng);
+        let val: u64 = if roll { 2 } else { 4 };
         let empty_cells = Self::get_empty_cells(self.cells);
         // We know it can't be empty because we checked earlier so unwrapping is safe
         let (x, y) = empty_cells.choose(&mut rng).unwrap();
@@ -184,12 +186,6 @@ impl Move {
 #[cfg(test)]
 mod tests {
     use super::{Grid, Move};
-
-    impl Grid {
-        fn new(cells: [[u64; 4]; 4]) -> Self {
-            Self { cells }
-        }
-    }
 
     #[test]
     fn get_empty_cells_work() {
@@ -668,5 +664,12 @@ mod tests {
         let grid = Grid::new([row1, row2, row3, row4]);
 
         assert!(grid.move_is_valid(Move::Right))
+    }
+
+    #[test]
+    fn grid_has_2_random_cells_after_being_created() {
+        let grid = Grid::new_random();
+        let empty_cells = Grid::get_empty_cells(grid.cells);
+        assert_eq!(empty_cells.len(), 16-2);
     }
 }
