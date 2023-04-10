@@ -13,9 +13,11 @@ wasm-bindgen = "0.2"
 log = "0.4"
 console_error_panic_hook = "0.1"
 
+
 [lib]
 crate-type = ["cdylib"]
 
+
 [dependencies.web-sys]
 version = "0.3"
-features = ["HtmlElement", "HtmlDivElement", "Window"]
+features = ["HtmlElement", "HtmlDivElement", "Window", "TouchEvent","TouchList","Touch",]

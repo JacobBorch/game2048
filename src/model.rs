@@ -3,12 +3,9 @@ use web_sys::HtmlDivElement;
 use wasm_bindgen::prelude::Closure;
 use yew::events::KeyboardEvent;
 use yew::prelude::*;
+use web_sys::{TouchEvent, TouchList};
 
 use crate::grid::{Grid, Move};
-
-pub enum Msg {
-    KeyDown(KeyboardEvent)
-}
 
 fn get_color_for_cell(value: u64) -> &'static str {
     match value {
@@ -28,10 +25,19 @@ fn get_color_for_cell(value: u64) -> &'static str {
     }
 }
 
+pub enum Msg {
+    KeyDown(KeyboardEvent),
+    TouchStart(TouchEvent),
+    TouchMove(TouchEvent),
+    TouchEnd(TouchEvent)
+}
+
 pub struct Model {
     grid: Grid,
     score: u64,
     grid_node: NodeRef,
+    touch_start_x: Option<i32>,
+    touch_start_y: Option<i32>
 }
 
 impl Model {
@@ -67,6 +73,9 @@ impl Component for Model {
             grid: Grid::default(),
             score: 0,
             grid_node: NodeRef::default(),
+            touch_start_x: None,
+            touch_start_y: None,
+            
         };
 
         let grid_node = model.grid_node.clone();
@@ -90,8 +99,11 @@ impl Component for Model {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <>
-            <div class="grid" tabindex="0" ref={self.grid_node.clone()} 
+            <div class="grid disable-scroll" tabindex="0" ref={self.grid_node.clone()} 
             onkeydown={ctx.link().callback(|event| Msg::KeyDown(event))}
+            ontouchstart={ctx.link().callback(|event| Msg::TouchStart(event))}
+            ontouchmove={ctx.link().callback(|event| Msg::TouchMove(event))}
+            ontouchend={ctx.link().callback(|event| Msg::TouchEnd(event))}
             >
             <section class="section">
                 <div class="container">
@@ -125,6 +137,60 @@ impl Component for Model {
                     self.grid.attempt(a);
                 }
 
+                true
+            }
+            Msg::TouchStart(event) => {
+                event.prevent_default();
+                let touches: TouchList = event.target_touches();
+                if touches.length() > 0 {
+                    let touch = touches.item(0).expect("No touch found");
+                    self.touch_start_x = Some(touch.client_x());
+                    self.touch_start_y = Some(touch.client_y());
+                }
+                true
+            }
+            Msg::TouchMove(event) => {
+                event.prevent_default();
+                true
+            }
+            Msg::TouchEnd(event) => {
+                event.prevent_default();
+                if let Some(touch_start_x) = self.touch_start_x {
+                    if let Some(touch_start_y) = self.touch_start_y {
+                        let changed_touches: TouchList = event.changed_touches();
+                        if changed_touches.length() > 0 {
+                            let touch = changed_touches.item(0).expect("No touch found");
+                            let dx = touch.client_x() - touch_start_x;
+                            let dy = touch.client_y() - touch_start_y;
+                            let move_threshold = 30; // You can adjust this value as needed
+            
+                            let arrow = if dx.abs() > dy.abs() {
+                                if dx > move_threshold {
+                                    Some(Move::Right)
+                                } else if dx < -move_threshold {
+                                    Some(Move::Left)
+                                } else {
+                                    None
+                                }
+                            } else {
+                                if dy > move_threshold {
+                                    Some(Move::Down)
+                                } else if dy < -move_threshold {
+                                    Some(Move::Up)
+                                } else {
+                                    None
+                                }
+                            };
+            
+                            if let Some(a) = arrow {
+                                self.grid.attempt(a);
+                            }
+            
+                            self.touch_start_x = None;
+                            self.touch_start_y = None;
+                        }
+                    }
+                }
                 true
             }
         }

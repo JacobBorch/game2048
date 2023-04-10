@@ -1,6 +1,8 @@
 <!DOCTYPE html><html lang="en"><head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=0.8, minimum-scale=0.8, maximum-scale=1, user-scalable=no">
+
+    
     <title>2048 Game</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
     <style>
@@ -55,10 +57,13 @@
       .square-number {
         font-size: 3em;
       }
+      .disable-scroll {
+        touch-action: none;
+      }
     </style>
   
-<link rel="preload" href="/game2048-185d7a636a15ac9_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/game2048-185d7a636a15ac9.js"></head>
+<link rel="preload" href="/game2048-acfd9a4999bbb6f2_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/game2048-acfd9a4999bbb6f2.js"></head>
   <body>
     <script type="module">
       import init from "./wasm.js";
@@ -66,7 +71,7 @@
     </script>
   
 
-<script type="module">import init from '/game2048-185d7a636a15ac9.js';init('/game2048-185d7a636a15ac9_bg.wasm');</script><script>(function () {
+<script type="module">import init from '/game2048-acfd9a4999bbb6f2.js';init('/game2048-acfd9a4999bbb6f2_bg.wasm');</script><script>(function () {
     var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     var url = protocol + '//' + window.location.host + '/_trunk/ws';
     var poll_interval = 5000;
