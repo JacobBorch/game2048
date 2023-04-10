@@ -1,6 +1,7 @@
 use rand::{seq::SliceRandom, distributions::Bernoulli, prelude::Distribution};
 
 const MOVES: [Move; 4] = [Move::Left, Move::Right, Move::Up, Move::Down];
+const CHANCE_FOR_TWO: f64 = 0.9;
 
 #[derive(PartialEq, Debug)]
 pub struct Grid {
@@ -49,7 +50,7 @@ impl Grid {
             return;
         }
         let mut rng = rand::thread_rng();
-        let bern = Bernoulli::new(0.9).unwrap();
+        let bern = Bernoulli::new(CHANCE_FOR_TWO).unwrap();
         let roll = bern.sample(&mut rng);
         let val: u64 = if roll { 2 } else { 4 };
         let empty_cells = Self::get_empty_cells(self.cells);

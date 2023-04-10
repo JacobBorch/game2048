@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use wasm_bindgen::JsCast;
 use web_sys::HtmlDivElement;
 use wasm_bindgen::prelude::Closure;
@@ -22,6 +24,14 @@ fn get_color_for_cell(value: u64) -> &'static str {
         1024 => "#edc53f",
         2048 => "#edc22e",
         _ => "#3c3a32",
+    }
+}
+
+fn get_color_for_text(value: u64) -> &'static str {
+    match value {
+        2 => "#6c6462",
+        4 => "#6c6462",
+        _ => "#FFFFFF"
     }
 }
 
@@ -59,9 +69,11 @@ impl Model {
             0 => "".to_string(),
             _ => cell.to_string()
         };
+        let text_color = get_color_for_text(cell);
+        let text_style = format!("color:{};", text_color);
         html! {
             <div class="square" style={style}>
-                <span class="square-number">{ cell_text }</span>
+                <span class="square-number" style={text_style}>{ cell_text }</span>
             </div>
         }
     } 
