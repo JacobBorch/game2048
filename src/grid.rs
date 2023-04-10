@@ -200,8 +200,7 @@ impl Move {
 }
 
 pub enum Msg {
-    KeyDown(KeyboardEvent),
-    TouchStart(TouchEvent)
+    KeyDown(KeyboardEvent)
 }
 
 fn get_color_for_cell(value: u64) -> &'static str {
@@ -324,11 +323,6 @@ impl Component for Model {
 
                 true
             }
-            Msg::TouchStart(event) => {
-                self.grid.attempt(Move::Left);
-                true
-            },
-
         }
     }
 }
