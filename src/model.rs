@@ -55,9 +55,13 @@ impl Model {
         let position_top = format!("top:{}px;", y * 100); // Adjust this value based on your grid cell size
         let position_left = format!("left:{}px;", x * (100 + 7)); // Adjust this value based on your grid cell size
         let style = format!("{}{}{}", background_color, position_top, position_left);
+        let cell_text = match cell {
+            0 => "".to_string(),
+            _ => cell.to_string()
+        };
         html! {
             <div class="square" style={style}>
-                <span class="square-number">{ cell }</span>
+                <span class="square-number">{ cell_text }</span>
             </div>
         }
     } 
