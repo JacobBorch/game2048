@@ -175,7 +175,6 @@ impl Component for Model {
                 true
             }
             Msg::TouchStart(event) => {
-                event.prevent_default();
                 let touches: TouchList = event.target_touches();
                 if touches.length() > 0 {
                     let touch = touches.item(0).expect("No touch found");
@@ -184,46 +183,42 @@ impl Component for Model {
                 }
                 true
             }
-            Msg::TouchMove(event) => {
-                event.prevent_default();
-                true
-            }
+            Msg::TouchMove(_) => true,
             Msg::TouchEnd(event) => {
-                event.prevent_default();
-                if let Some(touch_start_x) = self.touch_start_x {
-                    if let Some(touch_start_y) = self.touch_start_y {
+                match (self.touch_start_x, self.touch_start_y) {
+                    (None, _) => return false,
+                    (_, None) => return false,
+                    (Some(x_start), Some(y_start)) => {
                         let changed_touches: TouchList = event.changed_touches();
-                        if changed_touches.length() > 0 {
-                            let touch = changed_touches.item(0).expect("No touch found");
-                            let dx = touch.client_x() - touch_start_x;
-                            let dy = touch.client_y() - touch_start_y;
-                            let move_threshold = 30; // You can adjust this value as needed
-
-                            let arrow = if dx.abs() > dy.abs() {
-                                if dx > move_threshold {
-                                    Some(Move::Right)
-                                } else if dx < -move_threshold {
-                                    Some(Move::Left)
-                                } else {
-                                    None
-                                }
-                            } else {
-                                if dy > move_threshold {
-                                    Some(Move::Down)
-                                } else if dy < -move_threshold {
-                                    Some(Move::Up)
-                                } else {
-                                    None
-                                }
-                            };
-
-                            if let Some(a) = arrow {
-                                self.make_move(a);
-                            }
-
-                            self.touch_start_x = None;
-                            self.touch_start_y = None;
+                        if changed_touches.length() == 0 {
+                            return false;
                         }
+                        // Can't be empty because we checked;
+                        let touch = changed_touches.item(0).unwrap();
+                        let dx = touch.client_x() - x_start;
+                        let dy = touch.client_y() - y_start;
+                        let move_threshold = 30;
+                        if dx.abs() < move_threshold && dy.abs() < move_threshold {
+                            return false;
+                        }
+
+                        let mov = if dx.abs() > dy.abs() {
+                            if dx.is_positive() {
+                                Move::Right
+                            } else {
+                                Move::Left
+                            }
+                        } else {
+                            if dy.is_positive() {
+                                Move::Down
+                            } else {
+                                Move::Up
+                            }
+                        };
+                        self.grid.attempt(mov);
+
+                        self.touch_start_x = None;
+                        self.touch_start_y = None;
                     }
                 }
                 true
